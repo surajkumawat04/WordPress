@@ -8037,17 +8037,25 @@ AttachmentsBrowser = View.extend(/** @lends wp.media.view.AttachmentsBrowser.pro
 		}
 
 		/*
-		 * For accessibility reasons, place the Inline Uploader before other sections.
-		 * This way, in the Media Library, it's right after the Add New button, see ticket #37188.
+		 * In the grid mode (the Media Library), place the Inline Uploader before
+		 * other sections so that the visual order and the DOM order match. This way,
+		 * the Inline Uploader in the Media Library is right after the "Add New"
+		 * button, see ticket #37188.
 		 */
-		this.createUploader();
+		if ( this.controller.isModeActive( 'grid' ) ) {
+			this.createUploader();
 
-		/*
-		 * Create a multi-purpose toolbar. Used as main toolbar in the Media Library
-		 * and also for other things, for example the "Drag and drop to reorder" and
-		 * "Suggested dimensions" info in the media modal.
-		 */
-		this.createToolbar();
+			/*
+			 * Create a multi-purpose toolbar. Used as main toolbar in the Media Library
+			 * and also for other things, for example the "Drag and drop to reorder" and
+			 * "Suggested dimensions" info in the media modal.
+			 */
+			this.createToolbar();
+		} else {
+			this.createToolbar();
+			this.createUploader();
+		}
+
 
 		// Add a heading before the attachments list.
 		this.createAttachmentsHeading();
@@ -8927,6 +8935,9 @@ AttachmentDisplay = Settings.extend(/** @lends wp.media.view.Settings.Attachment
 		}
 
 		$input.closest( '.setting' ).removeClass( 'hidden' );
+		if ( $input.length ) {
+			$input[0].scrollIntoView();
+		}
 	}
 });
 
@@ -9105,7 +9116,7 @@ Details = Attachment.extend(/** @lends wp.media.view.Attachment.Details.prototyp
 	},
 
 	/**
-	 * Sets the trash state on an attachment, or destroys the model itself.
+	 * Sets the Trash state on an attachment, or destroys the model itself.
 	 *
 	 * If the mediaTrash setting is set to true, trashes the attachment.
 	 * Otherwise, the model itself is destroyed.
@@ -9123,7 +9134,7 @@ Details = Attachment.extend(/** @lends wp.media.view.Attachment.Details.prototyp
 
 		this.getFocusableElements();
 
-		// When in the Media Library and the Media trash is enabled.
+		// When in the Media Library and the Media Trash is enabled.
 		if ( wp.media.view.settings.mediaTrash &&
 			'edit-metadata' === this.controller.content.mode() ) {
 

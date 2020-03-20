@@ -500,7 +500,7 @@ function search_theme_directories( $force = false ) {
 			continue;
 		}
 		foreach ( $dirs as $dir ) {
-			if ( ! is_dir( $theme_root . '/' . $dir ) || $dir[0] == '.' || $dir == 'CVS' ) {
+			if ( ! is_dir( $theme_root . '/' . $dir ) || '.' === $dir[0] || 'CVS' === $dir ) {
 				continue;
 			}
 			if ( file_exists( $theme_root . '/' . $dir . '/style.css' ) ) {
@@ -520,7 +520,7 @@ function search_theme_directories( $force = false ) {
 					continue;
 				}
 				foreach ( $sub_dirs as $sub_dir ) {
-					if ( ! is_dir( $theme_root . '/' . $dir . '/' . $sub_dir ) || $dir[0] == '.' || $dir == 'CVS' ) {
+					if ( ! is_dir( $theme_root . '/' . $dir . '/' . $sub_dir ) || '.' === $dir[0] || 'CVS' === $dir ) {
 						continue;
 					}
 					if ( ! file_exists( $theme_root . '/' . $dir . '/' . $sub_dir . '/style.css' ) ) {
@@ -553,7 +553,7 @@ function search_theme_directories( $force = false ) {
 		$theme_roots[ $theme_dir ] = $relative_theme_roots[ $theme_data['theme_root'] ]; // Convert absolute to relative.
 	}
 
-	if ( $theme_roots != get_site_transient( 'theme_roots' ) ) {
+	if ( get_site_transient( 'theme_roots' ) != $theme_roots ) {
 		set_site_transient( 'theme_roots', $theme_roots, $cache_expiration );
 	}
 
@@ -1427,12 +1427,13 @@ function has_header_video() {
  * @return string|false Header video URL or false if there is no video.
  */
 function get_header_video_url() {
-	$id  = absint( get_theme_mod( 'header_video' ) );
-	$url = esc_url( get_theme_mod( 'external_header_video' ) );
+	$id = absint( get_theme_mod( 'header_video' ) );
 
 	if ( $id ) {
 		// Get the file URL from the attachment ID.
 		$url = wp_get_attachment_url( $id );
+	} else {
+		$url = get_theme_mod( 'external_header_video' );
 	}
 
 	/**
@@ -1648,7 +1649,7 @@ function _custom_background_cb() {
 	// A default has to be specified in style.css. It will not be printed here.
 	$color = get_background_color();
 
-	if ( $color === get_theme_support( 'custom-background', 'default-color' ) ) {
+	if ( get_theme_support( 'custom-background', 'default-color' ) === $color ) {
 		$color = false;
 	}
 

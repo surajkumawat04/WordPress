@@ -165,7 +165,7 @@ class WP_Posts_List_Table extends WP_List_Table {
 				$total_items = $post_counts[ $_REQUEST['post_status'] ];
 			} elseif ( isset( $_REQUEST['show_sticky'] ) && $_REQUEST['show_sticky'] ) {
 				$total_items = $this->sticky_posts_count;
-			} elseif ( isset( $_GET['author'] ) && $_GET['author'] == get_current_user_id() ) {
+			} elseif ( isset( $_GET['author'] ) && get_current_user_id() == $_GET['author'] ) {
 				$total_items = $this->user_posts_count;
 			} else {
 				$total_items = array_sum( $post_counts );
@@ -178,13 +178,13 @@ class WP_Posts_List_Table extends WP_List_Table {
 		}
 
 		if ( ! empty( $_REQUEST['mode'] ) ) {
-			$mode = $_REQUEST['mode'] === 'excerpt' ? 'excerpt' : 'list';
+			$mode = 'excerpt' === $_REQUEST['mode'] ? 'excerpt' : 'list';
 			set_user_setting( 'posts_list_mode', $mode );
 		} else {
 			$mode = get_user_setting( 'posts_list_mode', 'list' );
 		}
 
-		$this->is_trash = isset( $_REQUEST['post_status'] ) && $_REQUEST['post_status'] === 'trash';
+		$this->is_trash = isset( $_REQUEST['post_status'] ) && 'trash' === $_REQUEST['post_status'];
 
 		$this->set_pagination_args(
 			array(
@@ -469,17 +469,19 @@ class WP_Posts_List_Table extends WP_List_Table {
 	 * @since 5.2.0
 	 * @access protected
 	 *
-	 * @param string $post_type Post type key.
+	 * @param string $post_type Post type slug.
 	 */
 	protected function formats_dropdown( $post_type ) {
 		/**
 		 * Filters whether to remove the 'Formats' drop-down from the post list table.
 		 *
 		 * @since 5.2.0
+		 * @since 5.5.0 The `$post_type` parameter was added.
 		 *
-		 * @param bool $disable Whether to disable the drop-down. Default false.
+		 * @param bool   $disable   Whether to disable the drop-down. Default false.
+		 * @param string $post_type Post type slug.
 		 */
-		if ( apply_filters( 'disable_formats_dropdown', false ) ) {
+		if ( apply_filters( 'disable_formats_dropdown', false, $post_type ) ) {
 			return;
 		}
 
@@ -493,7 +495,7 @@ class WP_Posts_List_Table extends WP_List_Table {
 
 		/*
 		 * Return if the post type doesn't have post formats, or there are no posts using formats,
-		 * or if we're in the trash.
+		 * or if we're in the Trash.
 		 */
 		if ( ! is_object_in_taxonomy( $post_type, 'post_format' ) || ! $used_post_formats || $this->is_trash ) {
 			return;
@@ -993,7 +995,7 @@ class WP_Posts_List_Table extends WP_List_Table {
 
 		$can_edit_post = current_user_can( 'edit_post', $post->ID );
 
-		if ( $can_edit_post && $post->post_status != 'trash' ) {
+		if ( $can_edit_post && 'trash' !== $post->post_status ) {
 			$lock_holder = wp_check_post_lock( $post->ID );
 
 			if ( $lock_holder ) {
@@ -1014,7 +1016,7 @@ class WP_Posts_List_Table extends WP_List_Table {
 
 		$title = _draft_or_post_title();
 
-		if ( $can_edit_post && $post->post_status != 'trash' ) {
+		if ( $can_edit_post && 'trash' !== $post->post_status ) {
 			printf(
 				'<a class="row-title" href="%s" aria-label="%s">%s%s</a>',
 				get_edit_post_link( $post->ID ),
@@ -1608,12 +1610,12 @@ class WP_Posts_List_Table extends WP_List_Table {
 							<span class="input-text-wrap"><input type="text" name="post_password" class="inline-edit-password-input" value="" /></span>
 						</label>
 
-						<em class="alignleft inline-edit-or">
+						<span class="alignleft inline-edit-or">
 							<?php
 							/* translators: Between password field and private checkbox on post quick edit interface. */
 							_e( '&ndash;OR&ndash;' );
 							?>
-						</em>
+						</span>
 						<label class="alignleft inline-edit-private">
 							<input type="checkbox" name="keep_private" value="private" />
 							<span class="checkbox-title"><?php _e( 'Private' ); ?></span>
@@ -1633,7 +1635,7 @@ class WP_Posts_List_Table extends WP_List_Table {
 					<?php foreach ( $hierarchical_taxonomies as $taxonomy ) : ?>
 
 						<span class="title inline-edit-categories-label"><?php echo esc_html( $taxonomy->labels->name ); ?></span>
-						<input type="hidden" name="<?php echo ( $taxonomy->name === 'category' ) ? 'post_category[]' : 'tax_input[' . esc_attr( $taxonomy->name ) . '][]'; ?>" value="0" />
+						<input type="hidden" name="<?php echo ( 'category' === $taxonomy->name ) ? 'post_category[]' : 'tax_input[' . esc_attr( $taxonomy->name ) . '][]'; ?>" value="0" />
 						<ul class="cat-checklist <?php echo esc_attr( $taxonomy->name ); ?>-checklist">
 							<?php wp_terms_checklist( null, array( 'taxonomy' => $taxonomy->name ) ); ?>
 						</ul>

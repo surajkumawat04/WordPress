@@ -33,7 +33,7 @@ function wp_image_editor( $post_id, $msg = false ) {
 	$backup_sizes = get_post_meta( $post_id, '_wp_attachment_backup_sizes', true );
 	$can_restore  = false;
 	if ( ! empty( $backup_sizes ) && isset( $backup_sizes['full-orig'], $meta['file'] ) ) {
-		$can_restore = $backup_sizes['full-orig']['file'] != wp_basename( $meta['file'] );
+		$can_restore = wp_basename( $meta['file'] ) !== $backup_sizes['full-orig']['file'];
 	}
 
 	if ( $msg ) {
@@ -91,7 +91,7 @@ function wp_image_editor( $post_id, $msg = false ) {
 	<div class="imgedit-group">
 	<div class="imgedit-group-top">
 		<h2><button type="button" onclick="imageEdit.toggleHelp(this);" class="button-link"><?php _e( 'Restore Original Image' ); ?> <span class="dashicons dashicons-arrow-down imgedit-help-toggle"></span></button></h2>
-		<div class="imgedit-help">
+		<div class="imgedit-help imgedit-restore">
 		<p>
 			<?php
 			_e( 'Discard any changes and restore the original image.' );
@@ -159,7 +159,9 @@ function wp_image_editor( $post_id, $msg = false ) {
 	<div class="imgedit-group-top">
 		<h2><?php _e( 'Thumbnail Settings' ); ?></h2>
 		<button type="button" class="dashicons dashicons-editor-help imgedit-help-toggle" onclick="imageEdit.toggleHelp(this);return false;" aria-expanded="false"><span class="screen-reader-text"><?php esc_html_e( 'Thumbnail Settings Help' ); ?></span></button>
-		<p class="imgedit-help"><?php _e( 'You can edit the image while preserving the thumbnail. For example, you may wish to have a square thumbnail that displays just a section of the image.' ); ?></p>
+		<div class="imgedit-help">
+		<p><?php _e( 'You can edit the image while preserving the thumbnail. For example, you may wish to have a square thumbnail that displays just a section of the image.' ); ?></p>
+		</div>
 	</div>
 
 	<figure class="imgedit-thumbnail-preview">
@@ -335,7 +337,7 @@ function wp_save_image_file( $filename, $image, $mime_type, $post_id ) {
 		 *
 		 * @since 3.5.0
 		 *
-		 * @param mixed           $override  Value to return instead of saving. Default null.
+		 * @param bool|null       $override  Value to return instead of saving. Default null.
 		 * @param string          $filename  Name of the file to be saved.
 		 * @param WP_Image_Editor $image     The image editor instance.
 		 * @param string          $mime_type The mime type of the image.
@@ -576,7 +578,7 @@ function image_edit_apply_changes( $image, $changes ) {
 	foreach ( $changes as $operation ) {
 		switch ( $operation->type ) {
 			case 'rotate':
-				if ( $operation->angle != 0 ) {
+				if ( 0 != $operation->angle ) {
 					if ( $image instanceof WP_Image_Editor ) {
 						$image->rotate( $operation->angle );
 					} else {
@@ -585,7 +587,7 @@ function image_edit_apply_changes( $image, $changes ) {
 				}
 				break;
 			case 'flip':
-				if ( $operation->axis != 0 ) {
+				if ( 0 != $operation->axis ) {
 					if ( $image instanceof WP_Image_Editor ) {
 						$image->flip( ( $operation->axis & 1 ) != 0, ( $operation->axis & 2 ) != 0 );
 					} else {
@@ -954,7 +956,7 @@ function wp_save_image( $post_id ) {
 		wp_update_attachment_metadata( $post_id, $meta );
 		update_post_meta( $post_id, '_wp_attachment_backup_sizes', $backup_sizes );
 
-		if ( $target == 'thumbnail' || $target == 'all' || $target == 'full' ) {
+		if ( 'thumbnail' === $target || 'all' === $target || 'full' === $target ) {
 			// Check if it's an image edit from attachment edit screen.
 			if ( ! empty( $_REQUEST['context'] ) && 'edit-attachment' == $_REQUEST['context'] ) {
 				$thumb_url         = wp_get_attachment_image_src( $post_id, array( 900, 600 ), true );

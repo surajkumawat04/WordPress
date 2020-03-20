@@ -76,7 +76,7 @@ $post_ID = isset( $post_ID ) ? (int) $post_ID : 0;
 $user_ID = isset( $user_ID ) ? (int) $user_ID : 0;
 $action  = isset( $action ) ? $action : '';
 
-if ( $post_ID == get_option( 'page_for_posts' ) && empty( $post->post_content ) ) {
+if ( get_option( 'page_for_posts' ) == $post_ID && empty( $post->post_content ) ) {
 	add_action( 'edit_form_after_title', '_wp_posts_page_notice' );
 	remove_post_type_support( $post_type, 'editor' );
 }
@@ -245,7 +245,7 @@ $form_extra  .= "<input type='hidden' id='post_ID' name='post_ID' value='" . esc
 // Detect if there exists an autosave newer than the post and if that autosave is different than the post.
 if ( $autosave && mysql2date( 'U', $autosave->post_modified_gmt, false ) > mysql2date( 'U', $post->post_modified_gmt, false ) ) {
 	foreach ( _wp_post_revision_fields( $post ) as $autosave_field => $_autosave_field ) {
-		if ( normalize_whitespace( $autosave->$autosave_field ) != normalize_whitespace( $post->$autosave_field ) ) {
+		if ( normalize_whitespace( $autosave->$autosave_field ) !== normalize_whitespace( $post->$autosave_field ) ) {
 			$notice = sprintf(
 				/* translators: %s: URL to view the autosave. */
 				__( 'There is an autosave of this post that is more recent than the version below. <a href="%s">View the autosave</a>' ),
@@ -534,7 +534,7 @@ do_action( 'edit_form_top', $post );
 		if ( has_filter( 'pre_get_shortlink' ) || has_filter( 'get_shortlink' ) ) {
 			$shortlink = wp_get_shortlink( $post->ID, 'post' );
 
-			if ( ! empty( $shortlink ) && $shortlink !== $permalink && $permalink !== home_url( '?page_id=' . $post->ID ) ) {
+			if ( ! empty( $shortlink ) && $shortlink !== $permalink && home_url( '?page_id=' . $post->ID ) !== $permalink ) {
 				$sample_permalink_html .= '<input id="shortlink" type="hidden" value="' . esc_attr( $shortlink ) . '" /><button type="button" class="button button-small" onclick="prompt(&#39;URL:&#39;, jQuery(\'#shortlink\').val());">' . __( 'Get Shortlink' ) . '</button>';
 			}
 		}

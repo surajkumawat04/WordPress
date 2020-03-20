@@ -94,7 +94,7 @@ final class WP_Customize_Widgets {
 	 *
 	 * @since 3.9.0
 	 *
-	 * @param WP_Customize_Manager $manager Customize manager bootstrap instance.
+	 * @param WP_Customize_Manager $manager Customizer bootstrap instance.
 	 */
 	public function __construct( $manager ) {
 		$this->manager = $manager;
@@ -1007,7 +1007,7 @@ final class WP_Customize_Widgets {
 					'temp_id'      => isset( $args['_temp_id'] ) ? $args['_temp_id'] : null,
 					'is_multi'     => $is_multi_widget,
 					'control_tpl'  => $control_tpl,
-					'multi_number' => ( $args['_add'] === 'multi' ) ? $args['_multi_num'] : false,
+					'multi_number' => ( 'multi' === $args['_add'] ) ? $args['_multi_num'] : false,
 					'is_disabled'  => $is_disabled,
 					'id_base'      => $id_base,
 					'transport'    => $this->is_widget_selective_refreshable( $id_base ) ? 'postMessage' : 'refresh',
@@ -1313,7 +1313,7 @@ final class WP_Customize_Widgets {
 	 * @return array|void Sanitized widget instance.
 	 */
 	public function sanitize_widget_instance( $value ) {
-		if ( $value === array() ) {
+		if ( array() === $value ) {
 			return $value;
 		}
 

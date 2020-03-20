@@ -910,7 +910,7 @@ class WP_Query {
 			}
 			unset( $tax_query );
 
-			if ( empty( $qv['author'] ) || ( $qv['author'] == '0' ) ) {
+			if ( empty( $qv['author'] ) || ( '0' == $qv['author'] ) ) {
 				$this->is_author = false;
 			} else {
 				$this->is_author = true;
@@ -1017,25 +1017,25 @@ class WP_Query {
 				unset( $this->queried_object );
 			}
 
-			if ( 'page' == get_option( 'show_on_front' ) && isset( $this->queried_object_id ) && $this->queried_object_id == get_option( 'page_for_posts' ) ) {
+			if ( 'page' === get_option( 'show_on_front' ) && isset( $this->queried_object_id ) && get_option( 'page_for_posts' ) == $this->queried_object_id ) {
 				$this->is_page       = false;
 				$this->is_home       = true;
 				$this->is_posts_page = true;
 			}
 
-			if ( isset( $this->queried_object_id ) && $this->queried_object_id == get_option( 'wp_page_for_privacy_policy' ) ) {
+			if ( isset( $this->queried_object_id ) && get_option( 'wp_page_for_privacy_policy' ) == $this->queried_object_id ) {
 				$this->is_privacy_policy = true;
 			}
 		}
 
 		if ( $qv['page_id'] ) {
-			if ( 'page' == get_option( 'show_on_front' ) && $qv['page_id'] == get_option( 'page_for_posts' ) ) {
+			if ( 'page' === get_option( 'show_on_front' ) && get_option( 'page_for_posts' ) == $qv['page_id'] ) {
 				$this->is_page       = false;
 				$this->is_home       = true;
 				$this->is_posts_page = true;
 			}
 
-			if ( $qv['page_id'] == get_option( 'wp_page_for_privacy_policy' ) ) {
+			if ( get_option( 'wp_page_for_privacy_policy' ) == $qv['page_id'] ) {
 				$this->is_privacy_policy = true;
 			}
 		}
@@ -1377,7 +1377,7 @@ class WP_Query {
 
 		foreach ( $q['search_terms'] as $term ) {
 			// If there is an $exclusion_prefix, terms prefixed with it should be excluded.
-			$exclude = $exclusion_prefix && ( $exclusion_prefix === substr( $term, 0, 1 ) );
+			$exclude = $exclusion_prefix && ( substr( $term, 0, 1 ) === $exclusion_prefix );
 			if ( $exclude ) {
 				$like_op  = 'NOT LIKE';
 				$andor_op = 'AND';
@@ -1861,11 +1861,11 @@ class WP_Query {
 			$q['showposts']      = (int) $q['showposts'];
 			$q['posts_per_page'] = $q['showposts'];
 		}
-		if ( ( isset( $q['posts_per_archive_page'] ) && $q['posts_per_archive_page'] != 0 ) && ( $this->is_archive || $this->is_search ) ) {
+		if ( ( isset( $q['posts_per_archive_page'] ) && 0 != $q['posts_per_archive_page'] ) && ( $this->is_archive || $this->is_search ) ) {
 			$q['posts_per_page'] = $q['posts_per_archive_page'];
 		}
 		if ( ! isset( $q['nopaging'] ) ) {
-			if ( $q['posts_per_page'] == -1 ) {
+			if ( -1 == $q['posts_per_page'] ) {
 				$q['nopaging'] = true;
 			} else {
 				$q['nopaging'] = false;
@@ -1884,15 +1884,15 @@ class WP_Query {
 		$q['posts_per_page'] = (int) $q['posts_per_page'];
 		if ( $q['posts_per_page'] < -1 ) {
 			$q['posts_per_page'] = abs( $q['posts_per_page'] );
-		} elseif ( $q['posts_per_page'] == 0 ) {
+		} elseif ( 0 == $q['posts_per_page'] ) {
 			$q['posts_per_page'] = 1;
 		}
 
-		if ( ! isset( $q['comments_per_page'] ) || $q['comments_per_page'] == 0 ) {
+		if ( ! isset( $q['comments_per_page'] ) || 0 == $q['comments_per_page'] ) {
 			$q['comments_per_page'] = get_option( 'comments_per_page' );
 		}
 
-		if ( $this->is_home && ( empty( $this->query ) || $q['preview'] == 'true' ) && ( 'page' == get_option( 'show_on_front' ) ) && get_option( 'page_on_front' ) ) {
+		if ( $this->is_home && ( empty( $this->query ) || 'true' === $q['preview'] ) && ( 'page' === get_option( 'show_on_front' ) ) && get_option( 'page_on_front' ) ) {
 			$this->is_page = true;
 			$this->is_home = false;
 			$q['page_id']  = get_option( 'page_on_front' );
@@ -2096,7 +2096,7 @@ class WP_Query {
 		}
 
 		if ( $q['page_id'] ) {
-			if ( ( 'page' != get_option( 'show_on_front' ) ) || ( $q['page_id'] != get_option( 'page_for_posts' ) ) ) {
+			if ( ( 'page' !== get_option( 'show_on_front' ) ) || ( get_option( 'page_for_posts' ) != $q['page_id'] ) ) {
 				$q['p'] = $q['page_id'];
 				$where  = " AND {$wpdb->posts}.ID = " . $q['page_id'];
 			}
@@ -2135,7 +2135,7 @@ class WP_Query {
 				$post_type  = array();
 				$taxonomies = array_keys( $this->tax_query->queried_terms );
 				foreach ( get_post_types( array( 'exclude_from_search' => false ) ) as $pt ) {
-					$object_taxonomies = $pt === 'attachment' ? get_taxonomies_for_attachments() : get_object_taxonomies( $pt );
+					$object_taxonomies = 'attachment' === $pt ? get_taxonomies_for_attachments() : get_object_taxonomies( $pt );
 					if ( array_intersect( $taxonomies, $object_taxonomies ) ) {
 						$post_type[] = $pt;
 					}
@@ -2214,7 +2214,7 @@ class WP_Query {
 
 		// Author/user stuff.
 
-		if ( ! empty( $q['author'] ) && $q['author'] != '0' ) {
+		if ( ! empty( $q['author'] ) && '0' != $q['author'] ) {
 			$q['author'] = addslashes_gpc( '' . urldecode( $q['author'] ) );
 			$authors     = array_unique( array_map( 'intval', preg_split( '/[,\s]+/', $q['author'] ) ) );
 			foreach ( $authors as $author ) {
@@ -3290,7 +3290,7 @@ class WP_Query {
 		global $post;
 		$this->in_the_loop = true;
 
-		if ( $this->current_post == -1 ) { // Loop has just started.
+		if ( -1 == $this->current_post ) { // Loop has just started.
 			/**
 			 * Fires once the loop is started.
 			 *
@@ -3380,7 +3380,7 @@ class WP_Query {
 
 		$comment = $this->next_comment();
 
-		if ( $this->current_comment == 0 ) {
+		if ( 0 == $this->current_comment ) {
 			/**
 			 * Fires once the comment loop is started.
 			 *
@@ -3608,7 +3608,8 @@ class WP_Query {
 	 *
 	 * @since 3.1.0
 	 *
-	 * @param string|string[] $post_types Optional. Post type or array of posts types to check against.
+	 * @param string|string[] $post_types Optional. Post type or array of posts types
+	 *                                    to check against. Default empty.
 	 * @return bool
 	 */
 	public function is_post_type_archive( $post_types = '' ) {
@@ -3630,7 +3631,8 @@ class WP_Query {
 	 *
 	 * @since 3.1.0
 	 *
-	 * @param mixed $attachment Attachment ID, title, slug, or array of such.
+	 * @param int|string|int[]|string[] $attachment Optional. Attachment ID, title, slug, or array of such
+	 *                                              to check against. Default empty.
 	 * @return bool
 	 */
 	public function is_attachment( $attachment = '' ) {
@@ -3664,7 +3666,8 @@ class WP_Query {
 	 *
 	 * @since 3.1.0
 	 *
-	 * @param mixed $author Optional. User ID, nickname, nicename, or array of User IDs, nicknames, and nicenames
+	 * @param int|string|int[]|string[] $author Optional. User ID, nickname, nicename, or array of such
+	 *                                          to check against. Default empty.
 	 * @return bool
 	 */
 	public function is_author( $author = '' ) {
@@ -3699,7 +3702,8 @@ class WP_Query {
 	 *
 	 * @since 3.1.0
 	 *
-	 * @param mixed $category Optional. Category ID, name, slug, or array of Category IDs, names, and slugs.
+	 * @param int|string|int[]|string[] $category Optional. Category ID, name, slug, or array of such
+	 *                                            to check against. Default empty.
 	 * @return bool
 	 */
 	public function is_category( $category = '' ) {
@@ -3734,7 +3738,8 @@ class WP_Query {
 	 *
 	 * @since 3.1.0
 	 *
-	 * @param mixed $tag Optional. Tag ID, name, slug, or array of Tag IDs, names, and slugs.
+	 * @param int|string|int[]|string[] $tag Optional. Tag ID, name, slug, or array of such
+	 *                                       to check against. Default empty.
 	 * @return bool
 	 */
 	public function is_tag( $tag = '' ) {
@@ -3775,9 +3780,12 @@ class WP_Query {
 	 *
 	 * @global array $wp_taxonomies
 	 *
-	 * @param mixed $taxonomy Optional. Taxonomy slug or slugs.
-	 * @param mixed $term     Optional. Term ID, name, slug or array of Term IDs, names, and slugs.
-	 * @return bool True for custom taxonomy archive pages, false for built-in taxonomies (category and tag archives).
+	 * @param string|string[]           $taxonomy Optional. Taxonomy slug or slugs to check against.
+	 *                                            Default empty.
+	 * @param int|string|int[]|string[] $term     Optional. Term ID, name, slug, or array of such
+	 *                                            to check against. Default empty.
+	 * @return bool True for custom taxonomy archive pages, false for built-in taxonomies
+	 *              (category and tag archives).
 	 */
 	public function is_tax( $taxonomy = '', $term = '' ) {
 		global $wp_taxonomies;
@@ -3854,7 +3862,8 @@ class WP_Query {
 	 *
 	 * @since 3.1.0
 	 *
-	 * @param string|array $feeds Optional feed types to check.
+	 * @param string|string[] $feeds Optional. Feed type or array of feed types
+	 *                                         to check against. Default empty.
 	 * @return bool
 	 */
 	public function is_feed( $feeds = '' ) {
@@ -3969,7 +3978,8 @@ class WP_Query {
 	 *
 	 * @since 3.1.0
 	 *
-	 * @param int|string|array $page Optional. Page ID, title, slug, path, or array of such. Default empty.
+	 * @param int|string|int[]|string[] $page Optional. Page ID, title, slug, path, or array of such
+	 *                                        to check against. Default empty.
 	 * @return bool Whether the query is for an existing single page.
 	 */
 	public function is_page( $page = '' ) {
@@ -4075,7 +4085,8 @@ class WP_Query {
 	 *
 	 * @since 3.1.0
 	 *
-	 * @param int|string|array $post Optional. Post ID, title, slug, path, or array of such. Default empty.
+	 * @param int|string|int[]|string[] $post Optional. Post ID, title, slug, path, or array of such
+	 *                                        to check against. Default empty.
 	 * @return bool Whether the query is for an existing single post.
 	 */
 	public function is_single( $post = '' ) {
@@ -4124,8 +4135,10 @@ class WP_Query {
 	 *
 	 * @since 3.1.0
 	 *
-	 * @param string|array $post_types Optional. Post type or array of post types. Default empty.
-	 * @return bool Whether the query is for an existing single post of any of the given post types.
+	 * @param string|string[] $post_types Optional. Post type or array of post types
+	 *                                    to check against. Default empty.
+	 * @return bool Whether the query is for an existing single post
+	 *              or any of the given post types.
 	 */
 	public function is_singular( $post_types = '' ) {
 		if ( empty( $post_types ) || ! $this->is_singular ) {
@@ -4300,7 +4313,7 @@ class WP_Query {
 		 * Force full post content when viewing the permalink for the $post,
 		 * or when on an RSS feed. Otherwise respect the 'more' tag.
 		 */
-		if ( $post->ID === get_queried_object_id() && ( $this->is_page() || $this->is_single() ) ) {
+		if ( get_queried_object_id() === $post->ID && ( $this->is_page() || $this->is_single() ) ) {
 			$more = 1;
 		} elseif ( $this->is_feed() ) {
 			$more = 1;

@@ -9,32 +9,35 @@
 if ( isset( $_GET['page'] ) && ! empty( $_POST ) ) {
 	// Ensure POST-ing to `tools.php?page=export_personal_data` and `tools.php?page=remove_personal_data`
 	// continues to work after creating the new files for exporting and erasing of personal data.
-	if ( $_GET['page'] === 'export_personal_data' ) {
+	if ( 'export_personal_data' === $_GET['page'] ) {
 		require_once ABSPATH . 'wp-admin/export-personal-data.php';
 		return;
-	} elseif ( $_GET['page'] === 'remove_personal_data' ) {
+	} elseif ( 'remove_personal_data' === $_GET['page'] ) {
 		require_once ABSPATH . 'wp-admin/erase-personal-data.php';
 		return;
 	}
 }
 
-/** WordPress Administration Bootstrap */
-require_once __DIR__ . '/admin.php';
-
 // The privacy policy guide used to be outputted from here. Since WP 5.3 it is in wp-admin/privacy-policy-guide.php.
 if ( isset( $_GET['wp-privacy-policy-guide'] ) ) {
+	require_once dirname( __DIR__ ) . '/wp-load.php';
 	wp_redirect( admin_url( 'privacy-policy-guide.php' ), 301 );
 	exit;
 } elseif ( isset( $_GET['page'] ) ) {
 	// These were also moved to files in WP 5.3.
-	if ( $_GET['page'] === 'export_personal_data' ) {
+	if ( 'export_personal_data' === $_GET['page'] ) {
+		require_once dirname( __DIR__ ) . '/wp-load.php';
 		wp_redirect( admin_url( 'export-personal-data.php' ), 301 );
 		exit;
-	} elseif ( $_GET['page'] === 'remove_personal_data' ) {
+	} elseif ( 'remove_personal_data' === $_GET['page'] ) {
+		require_once dirname( __DIR__ ) . '/wp-load.php';
 		wp_redirect( admin_url( 'erase-personal-data.php' ), 301 );
 		exit;
 	}
 }
+
+/** WordPress Administration Bootstrap */
+require_once __DIR__ . '/admin.php';
 
 $title = __( 'Tools' );
 

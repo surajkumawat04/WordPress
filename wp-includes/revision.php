@@ -162,7 +162,7 @@ function wp_save_post_revision( $post_id ) {
 			$post_has_changed = false;
 
 			foreach ( array_keys( _wp_post_revision_fields( $post ) ) as $field ) {
-				if ( normalize_whitespace( $post->$field ) != normalize_whitespace( $last_revision->$field ) ) {
+				if ( normalize_whitespace( $post->$field ) !== normalize_whitespace( $last_revision->$field ) ) {
 					$post_has_changed = true;
 					break;
 				}
@@ -354,12 +354,12 @@ function wp_get_post_revision( &$post, $output = OBJECT, $filter = 'raw' ) {
 		return null;
 	}
 
-	if ( $output == OBJECT ) {
+	if ( OBJECT == $output ) {
 		return $revision;
-	} elseif ( $output == ARRAY_A ) {
+	} elseif ( ARRAY_A == $output ) {
 		$_revision = get_object_vars( $revision );
 		return $_revision;
-	} elseif ( $output == ARRAY_N ) {
+	} elseif ( ARRAY_N == $output ) {
 		$_revision = array_values( get_object_vars( $revision ) );
 		return $_revision;
 	}

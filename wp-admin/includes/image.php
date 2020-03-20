@@ -247,7 +247,7 @@ function wp_create_image_subsizes( $file, $attachment_id ) {
 	}
 
 	// Do not scale (large) PNG images. May result in sub-sizes that have greater file size than the original. See #48736.
-	if ( $imagesize['mime'] !== 'image/png' ) {
+	if ( 'image/png' !== $imagesize['mime'] ) {
 
 		/**
 		 * Filters the "BIG image" threshold value.
@@ -310,7 +310,7 @@ function wp_create_image_subsizes( $file, $attachment_id ) {
 			} else {
 				// TODO: Log errors.
 			}
-		} elseif ( ! empty( $exif_meta['orientation'] ) && (int) $exif_meta['orientation'] !== 1 ) {
+		} elseif ( ! empty( $exif_meta['orientation'] ) && 1 !== (int) $exif_meta['orientation'] ) {
 			// Rotate the whole original image if there is EXIF data and "orientation" is not 1.
 
 			$editor = wp_get_image_editor( $file );
@@ -533,7 +533,13 @@ function wp_generate_attachment_metadata( $attachment_id, $file ) {
 				 *
 				 * @param array $image_attachment An array of parameters to create the thumbnail.
 				 * @param array $metadata         Current attachment metadata.
-				 * @param array $uploaded         An array containing the thumbnail path and url.
+				 * @param array $uploaded         {
+				 *     Information about the newly-uploaded file.
+				 *
+				 *     @type string $file  Filename of the newly-uploaded file.
+				 *     @type string $url   URL of the uploaded file.
+				 *     @type string $type  File type.
+				 * }
 				 */
 				$image_attachment = apply_filters( 'attachment_thumbnail_args', $image_attachment, $metadata, $uploaded );
 
@@ -638,9 +644,9 @@ function wp_exif_frac2dec( $str ) {
 		return $str;
 	}
 
-	list( $n, $d ) = explode( '/', $str );
-	if ( ! empty( $d ) ) {
-		return $n / $d;
+	list( $numerator, $denominator ) = explode( '/', $str );
+	if ( ! empty( $denominator ) ) {
+		return $numerator / $denominator;
 	}
 	return $str;
 }

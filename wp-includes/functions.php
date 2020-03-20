@@ -582,18 +582,44 @@ function get_weekstartend( $mysqlstring, $start_of_week = '' ) {
 }
 
 /**
- * Unserialize value only if it was serialized.
+ * Serialize data, if needed.
+ *
+ * @since 2.0.5
+ *
+ * @param string|array|object $data Data that might be serialized.
+ * @return mixed A scalar data.
+ */
+function maybe_serialize( $data ) {
+	if ( is_array( $data ) || is_object( $data ) ) {
+		return serialize( $data );
+	}
+
+	/*
+	 * Double serialization is required for backward compatibility.
+	 * See https://core.trac.wordpress.org/ticket/12930
+	 * Also the world will end. See WP 3.6.1.
+	 */
+	if ( is_serialized( $data, false ) ) {
+		return serialize( $data );
+	}
+
+	return $data;
+}
+
+/**
+ * Unserialize data only if it was serialized.
  *
  * @since 2.0.0
  *
- * @param string $original Maybe unserialized original, if is needed.
+ * @param string $data Data that might be unserialized.
  * @return mixed Unserialized data can be any type.
  */
-function maybe_unserialize( $original ) {
-	if ( is_serialized( $original ) ) { // Don't attempt to unserialize data that wasn't serialized going in.
-		return @unserialize( $original );
+function maybe_unserialize( $data ) {
+	if ( is_serialized( $data ) ) { // Don't attempt to unserialize data that wasn't serialized going in.
+		return @unserialize( trim( $data ) );
 	}
-	return $original;
+
+	return $data;
 }
 
 /**
@@ -686,38 +712,13 @@ function is_serialized_string( $data ) {
 		return false;
 	} elseif ( ';' !== substr( $data, -1 ) ) {
 		return false;
-	} elseif ( $data[0] !== 's' ) {
+	} elseif ( 's' !== $data[0] ) {
 		return false;
 	} elseif ( '"' !== substr( $data, -2, 1 ) ) {
 		return false;
 	} else {
 		return true;
 	}
-}
-
-/**
- * Serialize data, if needed.
- *
- * @since 2.0.5
- *
- * @param string|array|object $data Data that might be serialized.
- * @return mixed A scalar data
- */
-function maybe_serialize( $data ) {
-	if ( is_array( $data ) || is_object( $data ) ) {
-		return serialize( $data );
-	}
-
-	/*
-	 * Double serialization is required for backward compatibility.
-	 * See https://core.trac.wordpress.org/ticket/12930
-	 * Also the world will end. See WP 3.6.1.
-	 */
-	if ( is_serialized( $data, false ) ) {
-		return serialize( $data );
-	}
-
-	return $data;
 }
 
 /**
@@ -1013,15 +1014,15 @@ function _http_build_query( $data, $prefix = null, $sep = null, $key = '', $urle
 		if ( $urlencode ) {
 			$k = urlencode( $k );
 		}
-		if ( is_int( $k ) && $prefix != null ) {
+		if ( is_int( $k ) && null != $prefix ) {
 			$k = $prefix . $k;
 		}
 		if ( ! empty( $key ) ) {
 			$k = $key . '%5B' . $k . '%5D';
 		}
-		if ( $v === null ) {
+		if ( null === $v ) {
 			continue;
-		} elseif ( $v === false ) {
+		} elseif ( false === $v ) {
 			$v = '0';
 		}
 
@@ -1132,7 +1133,7 @@ function add_query_arg( ...$args ) {
 	}
 
 	foreach ( $qs as $k => $v ) {
-		if ( $v === false ) {
+		if ( false === $v ) {
 			unset( $qs[ $k ] );
 		}
 	}
@@ -1539,7 +1540,7 @@ function do_feed() {
 	// Remove the pad, if present.
 	$feed = preg_replace( '/^_+/', '', $feed );
 
-	if ( $feed == '' || $feed == 'feed' ) {
+	if ( '' == $feed || 'feed' === $feed ) {
 		$feed = get_default_feed();
 	}
 
@@ -1885,7 +1886,7 @@ function wp_get_referer() {
 
 	$ref = wp_get_raw_referer();
 
-	if ( $ref && $ref !== wp_unslash( $_SERVER['REQUEST_URI'] ) && $ref !== home_url() . wp_unslash( $_SERVER['REQUEST_URI'] ) ) {
+	if ( $ref && wp_unslash( $_SERVER['REQUEST_URI'] ) !== $ref && home_url() . wp_unslash( $_SERVER['REQUEST_URI'] ) !== $ref ) {
 		return wp_validate_redirect( $ref, false );
 	}
 
@@ -1947,7 +1948,7 @@ function wp_mkdir_p( $target ) {
 	$target = str_replace( '//', '/', $target );
 
 	// Put the wrapper back on the target.
-	if ( $wrapper !== null ) {
+	if ( null !== $wrapper ) {
 		$target = $wrapper . '://' . $target;
 	}
 
@@ -1989,7 +1990,7 @@ function wp_mkdir_p( $target ) {
 		 * If a umask is set that modifies $dir_perms, we'll have to re-set
 		 * the $dir_perms correctly with chmod()
 		 */
-		if ( $dir_perms != ( $dir_perms & ~umask() ) ) {
+		if ( ( $dir_perms & ~umask() ) != $dir_perms ) {
 			$folder_parts = explode( '/', substr( $target, strlen( $target_parent ) + 1 ) );
 			for ( $i = 1, $c = count( $folder_parts ); $i <= $c; $i++ ) {
 				chmod( $target_parent . '/' . implode( '/', array_slice( $folder_parts, 0, $i ) ), $dir_perms );
@@ -2029,7 +2030,7 @@ function path_is_absolute( $path ) {
 		return true;
 	}
 
-	if ( strlen( $path ) == 0 || $path[0] == '.' ) {
+	if ( strlen( $path ) == 0 || '.' === $path[0] ) {
 		return false;
 	}
 
@@ -2039,7 +2040,7 @@ function path_is_absolute( $path ) {
 	}
 
 	// A path starting with / or \ is absolute; anything else is relative.
-	return ( $path[0] == '/' || $path[0] == '\\' );
+	return ( '/' === $path[0] || '\\' === $path[0] );
 }
 
 /**
@@ -2185,7 +2186,7 @@ function wp_is_writable( $path ) {
  * @return bool Whether the path is writable.
  */
 function win_is_writable( $path ) {
-	if ( $path[ strlen( $path ) - 1 ] == '/' ) {
+	if ( '/' === $path[ strlen( $path ) - 1 ] ) {
 		// If it looks like a directory, check a random file within the directory.
 		return win_is_writable( $path . uniqid( mt_rand() ) . '.tmp' );
 	} elseif ( is_dir( $path ) ) {
@@ -2197,7 +2198,7 @@ function win_is_writable( $path ) {
 	$should_delete_tmp_file = ! file_exists( $path );
 
 	$f = @fopen( $path, 'a' );
-	if ( $f === false ) {
+	if ( false === $f ) {
 		return false;
 	}
 	fclose( $f );
@@ -2615,7 +2616,14 @@ function _wp_check_existing_file_names( $filename, $files ) {
  * @param null|string  $deprecated Never used. Set to null.
  * @param string       $bits       File content
  * @param string       $time       Optional. Time formatted in 'yyyy/mm'. Default null.
- * @return array
+ * @return array {
+ *     Information about the newly-uploaded file.
+ *
+ *     @type string       $file  Filename of the newly-uploaded file.
+ *     @type string       $url   URL of the uploaded file.
+ *     @type string       $type  File type.
+ *     @type string|false $error Error message, if there has been an error.
+ * }
  */
 function wp_upload_bits( $name, $deprecated, $bits, $time = null ) {
 	if ( ! empty( $deprecated ) ) {
@@ -2633,19 +2641,19 @@ function wp_upload_bits( $name, $deprecated, $bits, $time = null ) {
 
 	$upload = wp_upload_dir( $time );
 
-	if ( $upload['error'] !== false ) {
+	if ( false !== $upload['error'] ) {
 		return $upload;
 	}
 
 	/**
 	 * Filters whether to treat the upload bits as an error.
 	 *
-	 * Passing a non-array to the filter will effectively short-circuit preparing
-	 * the upload bits, returning that value instead.
+	 * Returning a non-array from the filter will effectively short-circuit preparing the upload
+	 * bits, returning that value instead. An error message should be returned as a string.
 	 *
 	 * @since 3.0.0
 	 *
-	 * @param mixed $upload_bits_error An array of upload bits data, or a non-array error to return.
+	 * @param array|string $upload_bits_error An array of upload bits data, or error message to return.
 	 */
 	$upload_bits_error = apply_filters(
 		'wp_upload_bits',
@@ -3899,6 +3907,8 @@ function wp_json_encode( $data, $options = 0, $depth = 512 ) {
  *
  * @see wp_json_encode()
  *
+ * @throws Exception If depth limit is reached.
+ *
  * @param mixed $data  Variable (usually an array or object) to encode as JSON.
  * @param int   $depth Maximum depth to walk through $data. Must be greater than 0.
  * @return mixed The sanitized data that shall be encoded to JSON.
@@ -4321,7 +4331,7 @@ function smilies_init() {
 
 		// New subpattern?
 		if ( $firstchar != $subchar ) {
-			if ( $subchar != '' ) {
+			if ( '' != $subchar ) {
 				$wp_smiliessearch .= ')(?=' . $spaces . '|$)';  // End previous "subpattern".
 				$wp_smiliessearch .= '|(?<=' . $spaces . '|^)'; // Begin another "subpattern".
 			}
@@ -4347,10 +4357,11 @@ function smilies_init() {
  * @since 2.3.0 `$args` can now also be an object.
  *
  * @param string|array|object $args     Value to merge with $defaults.
- * @param array               $defaults Optional. Array that serves as the defaults. Default empty.
+ * @param array               $defaults Optional. Array that serves as the defaults.
+ *                                      Default empty array.
  * @return array Merged user defined values with defaults.
  */
-function wp_parse_args( $args, $defaults = '' ) {
+function wp_parse_args( $args, $defaults = array() ) {
 	if ( is_object( $args ) ) {
 		$parsed_args = get_object_vars( $args );
 	} elseif ( is_array( $args ) ) {
@@ -4359,7 +4370,7 @@ function wp_parse_args( $args, $defaults = '' ) {
 		wp_parse_str( $args, $parsed_args );
 	}
 
-	if ( is_array( $defaults ) ) {
+	if ( is_array( $defaults ) && $defaults ) {
 		return array_merge( $defaults, $parsed_args );
 	}
 	return $parsed_args;
@@ -5461,7 +5472,7 @@ function is_main_site( $site_id = null, $network_id = null ) {
 
 	$site_id = (int) $site_id;
 
-	return $site_id === get_main_site_id( $network_id );
+	return get_main_site_id( $network_id ) === $site_id;
 }
 
 /**
@@ -5505,7 +5516,7 @@ function is_main_network( $network_id = null ) {
 
 	$network_id = (int) $network_id;
 
-	return ( $network_id === get_main_network_id() );
+	return ( get_main_network_id() === $network_id );
 }
 
 /**
@@ -6545,7 +6556,7 @@ function wp_auth_check( $response ) {
  */
 function get_tag_regex( $tag ) {
 	if ( empty( $tag ) ) {
-		return;
+		return '';
 	}
 	return sprintf( '<%1$s[^<]*(?:>[\s\S]*<\/%1$s>|\s*\/>)', tag_escape( $tag ) );
 }
@@ -7513,7 +7524,7 @@ function recurse_dirsize( $directory, $exclude = null, $max_execution_time = nul
 		return false;
 	}
 
-	if ( $max_execution_time === null ) {
+	if ( null === $max_execution_time ) {
 		// Keep the previous behavior but attempt to prevent fatal errors from timeout if possible.
 		if ( function_exists( 'ini_get' ) ) {
 			$max_execution_time = ini_get( 'max_execution_time' );
@@ -7532,7 +7543,7 @@ function recurse_dirsize( $directory, $exclude = null, $max_execution_time = nul
 	if ( $handle ) {
 		while ( ( $file = readdir( $handle ) ) !== false ) {
 			$path = $directory . '/' . $file;
-			if ( $file != '.' && $file != '..' ) {
+			if ( '.' !== $file && '..' !== $file ) {
 				if ( is_file( $path ) ) {
 					$size += filesize( $path );
 				} elseif ( is_dir( $path ) ) {

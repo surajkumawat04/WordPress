@@ -1956,6 +1956,18 @@ section.ephemera .entry-title a span {
 	border-top: 1px solid #ccc;
 	border-bottom: 1px solid #ccc;
 }
+.widget_calendar .wp-calendar-nav {
+	display: table;
+	width: 95%;
+}
+.widget_calendar .wp-calendar-nav span {
+	display: table-cell;
+	text-align: center;
+}
+.widget_calendar .wp-calendar-nav-prev,
+.widget_calendar .wp-calendar-nav-next {
+	width: 40%;
+}
 
 /* Text Widget */
 .widget_text ul,

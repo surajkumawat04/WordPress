@@ -82,7 +82,7 @@ this["wp"] = this["wp"] || {}; this["wp"]["mediaUtils"] =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 433);
+/******/ 	return __webpack_require__(__webpack_require__.s = 441);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -101,7 +101,7 @@ this["wp"] = this["wp"] || {}; this["wp"]["mediaUtils"] =
 
 /***/ }),
 
-/***/ 12:
+/***/ 13:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -124,7 +124,7 @@ function _createClass(Constructor, protoProps, staticProps) {
 
 /***/ }),
 
-/***/ 13:
+/***/ 14:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -137,7 +137,7 @@ function _classCallCheck(instance, Constructor) {
 
 /***/ }),
 
-/***/ 14:
+/***/ 15:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -156,7 +156,7 @@ function _possibleConstructorReturn(self, call) {
 
 /***/ }),
 
-/***/ 15:
+/***/ 16:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -170,7 +170,7 @@ function _getPrototypeOf(o) {
 
 /***/ }),
 
-/***/ 16:
+/***/ 17:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -204,7 +204,7 @@ function _inherits(subClass, superClass) {
 
 /***/ }),
 
-/***/ 17:
+/***/ 18:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -244,13 +244,13 @@ function _toConsumableArray(arr) {
 
 /***/ }),
 
-/***/ 22:
+/***/ 20:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/esm/arrayWithHoles.js
-var arrayWithHoles = __webpack_require__(37);
+var arrayWithHoles = __webpack_require__(36);
 
 // CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/iterableToArrayLimit.js
 function _iterableToArrayLimit(arr, i) {
@@ -283,7 +283,7 @@ function _iterableToArrayLimit(arr, i) {
   return _arr;
 }
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/esm/nonIterableRest.js
-var nonIterableRest = __webpack_require__(38);
+var nonIterableRest = __webpack_require__(37);
 
 // CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/slicedToArray.js
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return _slicedToArray; });
@@ -337,7 +337,7 @@ function _iterableToArray(iter) {
 
 /***/ }),
 
-/***/ 37:
+/***/ 36:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -348,7 +348,7 @@ function _arrayWithHoles(arr) {
 
 /***/ }),
 
-/***/ 38:
+/***/ 37:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -373,29 +373,29 @@ function _nonIterableRest() {
 
 /***/ }),
 
-/***/ 433:
+/***/ 441:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/esm/classCallCheck.js
-var classCallCheck = __webpack_require__(13);
+var classCallCheck = __webpack_require__(14);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/esm/createClass.js
-var createClass = __webpack_require__(12);
+var createClass = __webpack_require__(13);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/esm/possibleConstructorReturn.js
-var possibleConstructorReturn = __webpack_require__(14);
+var possibleConstructorReturn = __webpack_require__(15);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/esm/getPrototypeOf.js
-var getPrototypeOf = __webpack_require__(15);
+var getPrototypeOf = __webpack_require__(16);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/esm/assertThisInitialized.js
 var assertThisInitialized = __webpack_require__(7);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/esm/inherits.js + 1 modules
-var inherits = __webpack_require__(16);
+var inherits = __webpack_require__(17);
 
 // EXTERNAL MODULE: external {"this":"lodash"}
 var external_this_lodash_ = __webpack_require__(2);
@@ -426,6 +426,11 @@ var external_this_wp_i18n_ = __webpack_require__(1);
 
 var _window = window,
     wp = _window.wp;
+/**
+ * Prepares the Featured Image toolbars and frames.
+ *
+ * @return {wp.media.view.MediaFrame.Select} The default media workflow.
+ */
 
 var getFeaturedImageMediaFrame = function getFeaturedImageMediaFrame() {
   return wp.media.view.MediaFrame.Select.extend({
@@ -443,16 +448,41 @@ var getFeaturedImageMediaFrame = function getFeaturedImageMediaFrame() {
     },
 
     /**
+     * Handle the edit state requirements of selected media item.
+     *
+     * @return {void}
+     */
+    editState: function editState() {
+      var selection = this.state('featured-image').get('selection');
+      var view = new wp.media.view.EditImage({
+        model: selection.single(),
+        controller: this
+      }).render(); // Set the view to the EditImage frame using the selected image.
+
+      this.content.set(view); // After bringing in the frame, load the actual editor via an ajax call.
+
+      view.loadEditor();
+    },
+
+    /**
      * Create the default states.
      *
      * @return {void}
      */
     createStates: function createStates() {
       this.on('toolbar:create:featured-image', this.featuredImageToolbar, this);
-      this.states.add([new wp.media.controller.FeaturedImage()]);
+      this.on('content:render:edit-image', this.editState, this);
+      this.states.add([new wp.media.controller.FeaturedImage(), new wp.media.controller.EditImage({
+        model: this.options.editImage
+      })]);
     }
   });
-}; // Getter for the sake of unit tests.
+};
+/**
+ * Prepares the Gallery toolbars and frames.
+ *
+ * @return {wp.media.view.MediaFrame.Post} The default media workflow.
+ */
 
 
 var media_upload_getGalleryDetailsMediaFrame = function getGalleryDetailsMediaFrame() {
@@ -465,11 +495,65 @@ var media_upload_getGalleryDetailsMediaFrame = function getGalleryDetailsMediaFr
    */
   return wp.media.view.MediaFrame.Post.extend({
     /**
+     * Set up gallery toolbar.
+     *
+     * @return {void}
+     */
+    galleryToolbar: function galleryToolbar() {
+      var editing = this.state().get('editing');
+      this.toolbar.set(new wp.media.view.Toolbar({
+        controller: this,
+        items: {
+          insert: {
+            style: 'primary',
+            text: editing ? wp.media.view.l10n.updateGallery : wp.media.view.l10n.insertGallery,
+            priority: 80,
+            requires: {
+              library: true
+            },
+
+            /**
+             * @fires wp.media.controller.State#update
+             */
+            click: function click() {
+              var controller = this.controller,
+                  state = controller.state();
+              controller.close();
+              state.trigger('update', state.get('library')); // Restore and reset the default state.
+
+              controller.setState(controller.options.state);
+              controller.reset();
+            }
+          }
+        }
+      }));
+    },
+
+    /**
+     * Handle the edit state requirements of selected media item.
+     *
+     * @return {void}
+     */
+    editState: function editState() {
+      var selection = this.state('gallery').get('selection');
+      var view = new wp.media.view.EditImage({
+        model: selection.single(),
+        controller: this
+      }).render(); // Set the view to the EditImage frame using the selected image.
+
+      this.content.set(view); // After bringing in the frame, load the actual editor via an ajax call.
+
+      view.loadEditor();
+    },
+
+    /**
      * Create the default states.
      *
      * @return {void}
      */
     createStates: function createStates() {
+      this.on('toolbar:create:main-gallery', this.galleryToolbar, this);
+      this.on('content:render:edit-image', this.editState, this);
       this.states.add([new wp.media.controller.Library({
         id: 'gallery',
         title: wp.media.view.l10n.createGalleryTitle,
@@ -481,6 +565,8 @@ var media_upload_getGalleryDetailsMediaFrame = function getGalleryDetailsMediaFr
         library: wp.media.query(Object(external_this_lodash_["defaults"])({
           type: 'image'
         }, this.options.library))
+      }), new wp.media.controller.EditImage({
+        model: this.options.editImage
       }), new wp.media.controller.GalleryEdit({
         library: this.options.selection,
         editing: this.options.editing,
@@ -577,6 +663,12 @@ function (_Component) {
       this.frame.on('open', this.onOpen);
       this.frame.on('close', this.onClose);
     }
+    /**
+     * Sets the Gallery frame and initializes listeners.
+     *
+     * @return {void}
+     */
+
   }, {
     key: "buildAndSetGalleryFrame",
     value: function buildAndSetGalleryFrame() {
@@ -627,6 +719,12 @@ function (_Component) {
       wp.media.frame = this.frame;
       this.initializeListeners();
     }
+    /**
+     * Initializes the Media Library requirements for the featured image flow.
+     *
+     * @return {void}
+     */
+
   }, {
     key: "buildAndSetFeatureImageFrame",
     value: function buildAndSetFeatureImageFrame() {
@@ -764,10 +862,10 @@ var defineProperty = __webpack_require__(5);
 var asyncToGenerator = __webpack_require__(47);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/esm/toConsumableArray.js + 2 modules
-var toConsumableArray = __webpack_require__(17);
+var toConsumableArray = __webpack_require__(18);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/esm/slicedToArray.js + 1 modules
-var slicedToArray = __webpack_require__(22);
+var slicedToArray = __webpack_require__(20);
 
 // EXTERNAL MODULE: external {"this":["wp","apiFetch"]}
 var external_this_wp_apiFetch_ = __webpack_require__(40);

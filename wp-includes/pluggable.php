@@ -255,7 +255,7 @@ if ( ! function_exists( 'wp_mail' ) ) :
 						// Mainly for legacy -- process a "From:" header if it's there.
 						case 'from':
 							$bracket_pos = strpos( $content, '<' );
-							if ( $bracket_pos !== false ) {
+							if ( false !== $bracket_pos ) {
 								// Text before the bracketed email is the "From" name.
 								if ( $bracket_pos > 0 ) {
 									$from_name = substr( $content, 0, $bracket_pos - 1 );
@@ -538,7 +538,7 @@ if ( ! function_exists( 'wp_authenticate' ) ) :
 		 */
 		$user = apply_filters( 'authenticate', null, $username, $password );
 
-		if ( $user == null ) {
+		if ( null == $user ) {
 			// TODO: What should the error message be? (Or would these even happen?)
 			// Only needed if all authentication handlers fail to return anything.
 			$user = new WP_Error( 'authentication_failed', __( '<strong>Error</strong>: Invalid username, email address or incorrect password.' ) );
@@ -821,11 +821,11 @@ if ( ! function_exists( 'wp_set_auth_cookie' ) ) :
 	 * @since 2.5.0
 	 * @since 4.3.0 Added the `$token` parameter.
 	 *
-	 * @param int    $user_id  User ID.
-	 * @param bool   $remember Whether to remember the user.
-	 * @param mixed  $secure   Whether the admin cookies should only be sent over HTTPS.
-	 *                         Default is the value of is_ssl().
-	 * @param string $token    Optional. User's session token to use for this cookie.
+	 * @param int         $user_id  User ID.
+	 * @param bool        $remember Whether to remember the user.
+	 * @param bool|string $secure   Whether the auth cookie should only be sent over HTTPS. Default is an empty
+	 *                              string which means the value of `is_ssl()` will be used.
+	 * @param string      $token    Optional. User's session token to use for this cookie.
 	 */
 	function wp_set_auth_cookie( $user_id, $remember = false, $secure = '', $token = '' ) {
 		if ( $remember ) {
@@ -855,27 +855,27 @@ if ( ! function_exists( 'wp_set_auth_cookie' ) ) :
 			$secure = is_ssl();
 		}
 
-		// Front-end cookie is secure when the auth cookie is secure and the site's home URL is forced HTTPS.
+		// Front-end cookie is secure when the auth cookie is secure and the site's home URL uses HTTPS.
 		$secure_logged_in_cookie = $secure && 'https' === parse_url( get_option( 'home' ), PHP_URL_SCHEME );
 
 		/**
-		 * Filters whether the connection is secure.
+		 * Filters whether the auth cookie should only be sent over HTTPS.
 		 *
 		 * @since 3.1.0
 		 *
-		 * @param bool $secure  Whether the connection is secure.
+		 * @param bool $secure  Whether the cookie should only be sent over HTTPS.
 		 * @param int  $user_id User ID.
 		 */
 		$secure = apply_filters( 'secure_auth_cookie', $secure, $user_id );
 
 		/**
-		 * Filters whether to use a secure cookie when logged-in.
+		 * Filters whether the logged in cookie should only be sent over HTTPS.
 		 *
 		 * @since 3.1.0
 		 *
-		 * @param bool $secure_logged_in_cookie Whether to use a secure cookie when logged-in.
+		 * @param bool $secure_logged_in_cookie Whether the logged in cookie should only be sent over HTTPS.
 		 * @param int  $user_id                 User ID.
-		 * @param bool $secure                  Whether the connection is secure.
+		 * @param bool $secure                  Whether the auth cookie should only be sent over HTTPS.
 		 */
 		$secure_logged_in_cookie = apply_filters( 'secure_logged_in_cookie', $secure_logged_in_cookie, $user_id, $secure );
 
@@ -1465,7 +1465,7 @@ if ( ! function_exists( 'wp_validate_redirect' ) ) :
 		 */
 		$allowed_hosts = (array) apply_filters( 'allowed_redirect_hosts', array( $wpp['host'] ), isset( $lp['host'] ) ? $lp['host'] : '' );
 
-		if ( isset( $lp['host'] ) && ( ! in_array( $lp['host'], $allowed_hosts ) && $lp['host'] != strtolower( $wpp['host'] ) ) ) {
+		if ( isset( $lp['host'] ) && ( ! in_array( $lp['host'], $allowed_hosts ) && strtolower( $wpp['host'] ) !== $lp['host'] ) ) {
 			$location = $default;
 		}
 
@@ -1544,7 +1544,7 @@ if ( ! function_exists( 'wp_notify_postauthor' ) ) :
 		}
 
 		// The author moderated a comment on their own post.
-		if ( $author && ! $notify_author && $post->post_author == get_current_user_id() ) {
+		if ( $author && ! $notify_author && get_current_user_id() == $post->post_author ) {
 			unset( $emails[ $author->user_email ] );
 		}
 
@@ -1957,7 +1957,7 @@ if ( ! function_exists( 'wp_new_user_notification' ) ) :
 	 *                           string (admin only), 'user', or 'both' (admin and user). Default empty.
 	 */
 	function wp_new_user_notification( $user_id, $deprecated = null, $notify = '' ) {
-		if ( $deprecated !== null ) {
+		if ( null !== $deprecated ) {
 			_deprecated_argument( __FUNCTION__, '4.3.1' );
 		}
 
@@ -2527,7 +2527,7 @@ if ( ! function_exists( 'wp_rand' ) ) :
 		$value = abs( hexdec( $value ) );
 
 		// Reduce the value to be within the min - max range.
-		if ( $max != 0 ) {
+		if ( 0 != $max ) {
 			$value = $min + ( $max - $min + 1 ) * $value / ( $max_random_number + 1 );
 		}
 
@@ -2643,7 +2643,7 @@ if ( ! function_exists( 'get_avatar' ) ) :
 		}
 
 		/**
-		 * Filters whether to retrieve the avatar URL early.
+		 * Allows the HTML for a user's avatar to be returned early.
 		 *
 		 * Passing a non-null value will effectively short-circuit get_avatar(), passing
 		 * the value through the {@see 'get_avatar'} filter and returning early.
@@ -2651,7 +2651,7 @@ if ( ! function_exists( 'get_avatar' ) ) :
 		 * @since 4.2.0
 		 *
 		 * @param string|null $avatar      HTML for the user's avatar. Default null.
-		 * @param mixed       $id_or_email The Gravatar to retrieve. Accepts a user_id, gravatar md5 hash,
+		 * @param mixed       $id_or_email The avatar to retrieve. Accepts a user_id, Gravatar MD5 hash,
 		 *                                 user email, WP_User object, WP_Post object, or WP_Comment object.
 		 * @param array       $args        Arguments passed to get_avatar_url(), after processing.
 		 */
@@ -2702,17 +2702,17 @@ if ( ! function_exists( 'get_avatar' ) ) :
 		);
 
 		/**
-		 * Filters the avatar to retrieve.
+		 * Filters the HTML for a user's avatar.
 		 *
 		 * @since 2.5.0
 		 * @since 4.2.0 The `$args` parameter was added.
 		 *
-		 * @param string $avatar      &lt;img&gt; tag for the user's avatar.
-		 * @param mixed  $id_or_email The Gravatar to retrieve. Accepts a user_id, gravatar md5 hash,
+		 * @param string $avatar      HTML for the user's avatar.
+		 * @param mixed  $id_or_email The avatar to retrieve. Accepts a user_id, Gravatar MD5 hash,
 		 *                            user email, WP_User object, WP_Post object, or WP_Comment object.
 		 * @param int    $size        Square avatar width and height in pixels to retrieve.
 		 * @param string $default     URL for the default image or a default type. Accepts '404', 'retro', 'monsterid',
-		 *                            'wavatar', 'indenticon','mystery' (or 'mm', or 'mysteryman'), 'blank', or 'gravatar_default'.
+		 *                            'wavatar', 'indenticon', 'mystery', 'mm', 'mysteryman', 'blank', or 'gravatar_default'.
 		 *                            Default is the value of the 'avatar_default' option, with a fallback of 'mystery'.
 		 * @param string $alt         Alternative text to use in the avatar image tag. Default empty.
 		 * @param array  $args        Arguments passed to get_avatar_data(), after processing.
